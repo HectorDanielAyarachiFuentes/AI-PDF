@@ -18,11 +18,18 @@
     color: var(--text);
     line-height: 1.5;
     padding: 2rem;
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
   }
   
   .container {
     max-width: 1400px;
     margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
   }
   
   .header {
@@ -48,7 +55,8 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
-    height: calc(100vh - 200px);
+    flex: 1;
+    margin-bottom: 2rem; /* Add spacing before footer */
   }
   
   .left-section {
@@ -128,7 +136,7 @@
     border: 2px dashed var(--primary);
     border-radius: 15px;
     padding: 1rem;
-    height: 400px;
+    height: 600px; /* Set specific height */
     overflow: hidden;
     position: relative;
   }
@@ -272,166 +280,167 @@
     100% { opacity: 1; }
   }
   
+  .footer {
+    margin-top: auto; /* Push footer to bottom */
+    padding: 2rem 0;
+    background: linear-gradient(to right, #1a237e, #0d47a1);
+    color: white;
+    border-radius: 15px;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+    width: 100%;
+  }
+  
+  .footer-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+  
+  .footer-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .footer-section h3 {
+    color: #90caf9;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    position: relative;
+  }
+  
+  .footer-section h3::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 40px;
+    height: 2px;
+    background: var(--primary);
+    transition: width 0.3s ease;
+  }
+  
+  .footer-section:hover h3::after {
+    width: 60px;
+  }
+  
+  .footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  
+  .footer-links a {
+    color: #e3f2fd;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .footer-links a:hover {
+    color: #90caf9;
+    transform: translateX(5px);
+  }
+  
+  .footer-social {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .social-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .social-icon:hover {
+    background: var(--primary);
+    transform: translateY(-3px);
+  }
+  
+  .footer-contact input {
+    padding: 0.8rem;
+    border-radius: 25px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: white;
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  .footer-contact input:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  
+  .footer-contact button {
+    width: 100%;
+  }
+  
+  .footer-contact button:hover {
+    animation: pulse 1s infinite;
+  }
+  
+  .text-layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    opacity: 0.2;
+    line-height: 1.0;
+    user-select: text;
+    color: transparent;
+    cursor: text;
+  }
+  
+  .text-layer > span {
+    color: transparent;
+    position: absolute;
+    white-space: pre;
+    cursor: text;
+    transform-origin: 0% 0%;
+  }
+  
+  .text-layer .highlight {
+    color: black !important;
+    background-color: #ffeb3b;
+    padding: 0 2px;
+    border-radius: 2px;
+    opacity: 1;
+  }
+  
   .page-container {
     position: relative;
     margin-bottom: 20px;
   }
   
-  .text-layer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    opacity: 0.2;
-    line-height: 1;
-    text-align: justify;
-    padding: 10px;
-    pointer-events: auto; /* Remove pointer-events: none to allow selection */
-    user-select: text; /* Explicitly allow text selection */
-    -webkit-user-select: text; /* For Safari */
-    -moz-user-select: text; /* For Firefox */
-    -ms-user-select: text; /* For IE/Edge */
-    cursor: text; /* Show text cursor */
-  }
-  
-  .text-layer::selection,
-  .text-layer *::selection {
-    background: rgba(41,98,255,0.3); /* Match the primary color theme */
-    color: inherit;
-  }
-  
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateX(-20px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-  
-  #pdf-preview canvas {
-    max-width: 100%;
-    margin-bottom: 10px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  }
-  
-  .scrollbar-style::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  .scrollbar-style::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-  }
-  
-  .scrollbar-style::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
-  }
-  
-  .scrollbar-style::-webkit-scrollbar-thumb:hover {
-    background: #555;
-  }
-  
-  .search-history {
-    background: white;
-    border-radius: 15px;
-    padding: 1rem;
-    margin: 1rem 0;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  }
-  
-  .tabs-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #eee;
-  }
-  
-  .clear-history-btn {
-    font-size: 0.8rem;
-    padding: 0.4rem 0.8rem;
-    background: #ff4444;
-  }
-  
-  .clear-history-btn:hover {
-    background: #cc0000;
-  }
-  
-  .tabs-container {
-    max-height: 200px;
-    overflow-y: auto;
-  }
-  
-  .search-tab {
-    padding: 0.8rem;
-    border-bottom: 1px solid #eee;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-  }
-  
-  .search-tab:hover {
-    background-color: #f5f5f5;
-  }
-  
-  .search-term {
-    font-weight: bold;
-    color: var(--primary);
-    margin-right: 1rem;
-  }
-  
-  .search-meta {
-    font-size: 0.8rem;
-    color: #666;
-  }
-  
-  .pdf-preview:empty::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 64px;
-    height: 64px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232962ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z'%3E%3C/path%3E%3Cpolyline points='13 2 13 9 20 9'%3E%3C/polyline%3E%3C/svg%3E") center/contain no-repeat;
-    opacity: 0.5;
-  }
-  
-  .loading {
-    position: relative;
-  }
-  
-  .loading::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 40px;
-    height: 40px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid var(--primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-  
-  @keyframes spin {
-    0% { transform: translate(-50%, -50%) rotate(0deg); }
-    100% { transform: translate(-50%, -50%) rotate(360deg); }
-  }
-  
   @media (max-width: 768px) {
-    .main-content {
-      grid-template-columns: 1fr;
-    }
-    
     .container {
       padding: 1rem;
+    }
+    
+    .main-content {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .pdf-preview {
+      height: 400px;
     }
   }
   </style></head><body>
@@ -475,9 +484,7 @@
         </div>
         <div id="search-history" class="search-history"></div>
         <div id="pdf-preview" class="pdf-preview">
-          <div id="pdf-content" class="pdf-content scrollbar-style">
-            <p>Vista previa del PDF aparecerá aquí</p>
-          </div>
+          <div id="pdf-content" class="pdf-content scrollbar-style"></div>
         </div>
       </div>
   
@@ -490,6 +497,72 @@
       </section>
     </div>
   </div>
+  
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>Acerca de</h3>
+        <div class="footer-links">
+          <a href="https://websim.ai">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+            </svg>
+            Sobre nosotros
+          </a>
+          <a href="https://websim.ai/docs">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            Documentación
+          </a>
+          <a href="https://websim.ai/blog">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+            </svg>
+            Blog
+          </a>
+        </div>
+      </div>
+  
+      <div class="footer-section">
+        <h3>Contacto</h3>
+        <div class="footer-contact">
+          <input type="email" placeholder="Tu email" id="newsletter-email" />
+          <button onclick="subscribeNewsletter()">Suscribirse al newsletter</button>
+        </div>
+        <div class="footer-social">
+          <div class="social-icon" onclick="window.open('https://twitter.com/websim_ai')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
+            </svg>
+          </div>
+          <div class="social-icon" onclick="window.open('https://github.com/websim-ai')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+            </svg>
+          </div>
+          <div class="social-icon" onclick="window.open('https://discord.gg/websim')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+  
+      <div class="footer-section">
+        <h3>Stats</h3>
+        <div id="stats-container" class="footer-links">
+          <div>PDFs procesados: <span id="processed-pdfs">0</span></div>
+          <div>Búsquedas realizadas: <span id="total-searches">0</span></div>
+          <div>Preguntas respondidas: <span id="total-questions">0</span></div>
+        </div>
+      </div>
+    </div>
+  </footer>
   
   <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
@@ -508,6 +581,58 @@
   const searchInput = document.getElementById('search-input');
   const searchButton = document.getElementById('search-button');
   
+  let stats = JSON.parse(localStorage.getItem('pdfStats')) || {
+    processedPDFs: 0,
+    totalSearches: 0,
+    totalQuestions: 0
+  };
+  
+  function updateStats() {
+    document.getElementById('processed-pdfs').textContent = stats.processedPDFs;
+    document.getElementById('total-searches').textContent = stats.totalSearches;
+    document.getElementById('total-questions').textContent = stats.totalQuestions;
+    localStorage.setItem('pdfStats', JSON.stringify(stats));
+  }
+  
+  // Update the loadPDF function to track processed PDFs
+  const originalLoadPDF = loadPDF;
+  window.loadPDF = async function(file) {
+    await originalLoadPDF(file);
+    stats.processedPDFs++;
+    updateStats();
+  };
+  
+  // Update the searchInPDF function to track searches
+  const originalSearchInPDF = searchInPDF;
+  window.searchInPDF = function() {
+    originalSearchInPDF();
+    stats.totalSearches++;
+    updateStats();
+  };
+  
+  // Update the processQuestion function to track questions
+  const originalProcessQuestion = processQuestion;
+  window.processQuestion = async function(question) {
+    await originalProcessQuestion(question);
+    stats.totalQuestions++;
+    updateStats();
+  };
+  
+  function subscribeNewsletter() {
+    const email = document.getElementById('newsletter-email').value;
+    if (!email || !email.includes('@')) {
+      addMessage('Sistema: Por favor, introduce un email válido.', 'ai-message');
+      return;
+    }
+    
+    // Here you would typically send this to your backend
+    addMessage('Sistema: ¡Gracias por suscribirte! Te mantendremos informado.', 'ai-message');
+    document.getElementById('newsletter-email').value = '';
+  }
+  
+  // Initialize stats when page loads
+  updateStats();
+  
   async function loadPDF(file) {
     try {
       const arrayBuffer = await file.arrayBuffer();
@@ -515,9 +640,7 @@
       pdfText = '';
       
       // Clear previous preview content
-      while (pdfContent.firstChild) {
-        pdfContent.removeChild(pdfContent.firstChild);
-      }
+      pdfContent.innerHTML = '';
   
       // Load and render all pages
       for (let i = 1; i <= pdfDocument.numPages; i++) {
@@ -540,19 +663,21 @@
         canvas.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
         canvas.style.borderRadius = '10px';
   
-        // Add text layer
+        // Add selectable text layer but make it invisible
         const textLayer = document.createElement('div');
         textLayer.className = 'text-layer';
         textLayer.style.width = `${viewport.width}px`;
         textLayer.style.height = `${viewport.height}px`;
+        textLayer.style.position = 'absolute';
+        textLayer.style.top = '0';
+        textLayer.style.left = '0';
+        textLayer.style.color = 'transparent'; // Make text invisible
+        textLayer.style.userSelect = 'text'; // Keep text selectable
   
-        // Create text content with proper spacing and formatting
-        const formattedText = pageText.split(' ').map(word => 
-          `<span style="margin-right: 4px;">${word}</span>`
-        ).join('');
+        // Add text without visible formatting
+        textLayer.innerHTML = pageText;
   
-        textLayer.innerHTML = formattedText;
-  
+        pageDiv.style.position = 'relative'; // For absolute positioning of text layer
         pageDiv.appendChild(canvas);
         pageDiv.appendChild(textLayer);
         pdfContent.appendChild(pageDiv);
