@@ -1,0 +1,970 @@
+<html><head><base href="." /><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>AI PDF Assistant</title><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js"></script><style>
+:root {
+  --primary: #2962ff;
+  --secondary: #0039cb;
+  --bg: #f0f2f5;
+  --text: #212121;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  padding: 2rem;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.header h1 {
+  color: var(--primary);
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  animation: fadeIn 1s ease-in;
+}
+
+.main-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  height: calc(100vh - 200px);
+}
+
+.left-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.upload-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+.search-section {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.search-section input {
+  flex-grow: 1;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.upload-section:hover {
+  transform: translateY(-5px);
+}
+
+.pdf-preview {
+  flex-grow: 1;
+  background: white;
+  border: 2px dashed var(--primary);
+  border-radius: 15px;
+  padding: 1rem;
+  height: 400px;
+  overflow: hidden;
+  position: relative;
+}
+
+.pdf-content {
+  height: 100%;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.pdf-preview:hover {
+  border-color: var(--secondary);
+  background: #f8f9fa;
+}
+
+.chat-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-messages {
+  flex-grow: 1;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  background: #f8f9fa;
+}
+
+.message {
+  margin-bottom: 1rem;
+  padding: 0.8rem 1.2rem;
+  border-radius: 15px;
+  max-width: 80%;
+  animation: slideIn 0.3s ease-out;
+}
+
+.user-message {
+  background: var(--primary);
+  color: white;
+  margin-left: auto;
+  box-shadow: 0 2px 4px rgba(41,98,255,0.2);
+}
+
+.ai-message {
+  background: #f0f0f0;
+  margin-right: auto;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.input-section {
+  display: flex;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+input[type="file"] {
+  padding: 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  width: 100%;
+  background: #f8f9fa;
+  cursor: pointer;
+}
+
+input[type="text"] {
+  flex-grow: 1;
+  padding: 1rem;
+  border-radius: 25px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+input[type="text"]:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(41,98,255,0.2);
+}
+
+button {
+  padding: 0.8rem 1.5rem;
+  border-radius: 25px;
+  border: none;
+  background: var(--primary);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+button:hover {
+  background: var(--secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(41,98,255,0.2);
+}
+
+.search-results-list {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 0.5rem;
+}
+
+.search-result-item {
+  margin: 0.5rem 0;
+  padding: 0.8rem;
+  border-bottom: 1px solid #eee;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.search-result-item:hover {
+  background-color: #f5f5f5;
+}
+
+.highlight {
+  background-color: #ffeb3b;
+  border-radius: 2px;
+  padding: 0 2px;
+  transition: background-color 0.5s ease;
+}
+
+.highlight.flash {
+  background-color: #ff9800;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.page-container {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.text-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.2;
+  line-height: 1;
+  text-align: justify;
+  padding: 10px;
+  pointer-events: auto; /* Remove pointer-events: none to allow selection */
+  user-select: text; /* Explicitly allow text selection */
+  -webkit-user-select: text; /* For Safari */
+  -moz-user-select: text; /* For Firefox */
+  -ms-user-select: text; /* For IE/Edge */
+  cursor: text; /* Show text cursor */
+}
+
+.text-layer::selection,
+.text-layer *::selection {
+  background: rgba(41,98,255,0.3); /* Match the primary color theme */
+  color: inherit;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+#pdf-preview canvas {
+  max-width: 100%;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.scrollbar-style::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-style::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.scrollbar-style::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.scrollbar-style::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.search-history {
+  background: white;
+  border-radius: 15px;
+  padding: 1rem;
+  margin: 1rem 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.tabs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.clear-history-btn {
+  font-size: 0.8rem;
+  padding: 0.4rem 0.8rem;
+  background: #ff4444;
+}
+
+.clear-history-btn:hover {
+  background: #cc0000;
+}
+
+.tabs-container {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.search-tab {
+  padding: 0.8rem;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.search-tab:hover {
+  background-color: #f5f5f5;
+}
+
+.search-term {
+  font-weight: bold;
+  color: var(--primary);
+  margin-right: 1rem;
+}
+
+.search-meta {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .container {
+    padding: 1rem;
+  }
+}
+</style></head><body>
+<div class="container">
+  <header class="header">
+    <h1>AI PDF Assistant</h1>
+    <p>Sube tu archivo PDF y pregunta lo que quieras sobre su contenido</p>
+  </header>
+
+  <div class="main-content">
+    <div class="left-section">
+      <div class="upload-section">
+        <input type="file" id="pdf-upload" accept=".pdf" />
+        <div class="search-section">
+          <input type="text" id="search-input" placeholder="Buscar en el PDF..." />
+          <button id="search-button">Buscar</button>
+        </div>
+      </div>
+      <div id="search-history" class="search-history"></div>
+      <div id="pdf-preview" class="pdf-preview">
+        <div id="pdf-content" class="pdf-content scrollbar-style">
+          <p>Vista previa del PDF aparecerá aquí</p>
+        </div>
+      </div>
+    </div>
+
+    <section class="chat-section">
+      <div id="chat-messages" class="chat-messages scrollbar-style"></div>
+      <div class="input-section">
+        <input type="text" id="question-input" placeholder="Haz tu pregunta sobre el PDF..." />
+        <button id="send-button">Enviar</button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+
+let pdfText = '';
+let pdfDocument = null;
+let currentPage = 1;
+let searchResults = []; // Array to store search results
+let searchHistory = JSON.parse(localStorage.getItem('pdfSearchHistory')) || {};
+
+const chatMessages = document.getElementById('chat-messages');
+const questionInput = document.getElementById('question-input');
+const sendButton = document.getElementById('send-button');
+const pdfPreview = document.getElementById('pdf-preview');
+const pdfContent = document.getElementById('pdf-content');
+const searchInput = document.getElementById('search-input');
+const searchButton = document.getElementById('search-button');
+
+async function loadPDF(file) {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    pdfDocument = await pdfjsLib.getDocument(arrayBuffer).promise;
+    pdfText = '';
+    
+    // Clear previous preview content
+    while (pdfContent.firstChild) {
+      pdfContent.removeChild(pdfContent.firstChild);
+    }
+
+    // Load and render all pages
+    for (let i = 1; i <= pdfDocument.numPages; i++) {
+      const page = await pdfDocument.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map(item => item.str).join(' ');
+      pdfText += `[Página ${i}] ` + pageText + '\n\n';
+
+      const pageDiv = document.createElement('div');
+      pageDiv.className = 'page-container';
+
+      // Create canvas
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      const viewport = page.getViewport({ scale: 1.5 });
+      
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+      canvas.style.marginBottom = '20px';
+      canvas.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+      canvas.style.borderRadius = '10px';
+
+      // Add text layer
+      const textLayer = document.createElement('div');
+      textLayer.className = 'text-layer';
+      textLayer.style.width = `${viewport.width}px`;
+      textLayer.style.height = `${viewport.height}px`;
+
+      // Create text content with proper spacing and formatting
+      const formattedText = pageText.split(' ').map(word => 
+        `<span style="margin-right: 4px;">${word}</span>`
+      ).join('');
+
+      textLayer.innerHTML = formattedText;
+
+      pageDiv.appendChild(canvas);
+      pageDiv.appendChild(textLayer);
+      pdfContent.appendChild(pageDiv);
+
+      const renderContext = {
+        canvasContext: context,
+        viewport: viewport
+      };
+
+      await page.render(renderContext).promise;
+    }
+    
+    addMessage('Sistema: PDF cargado correctamente.', 'ai-message');
+  } catch (error) {
+    console.error('Error al cargar el PDF:', error);
+    addMessage('Sistema: Error al cargar el PDF. Por favor, intenta con otro archivo.', 'ai-message');
+  }
+}
+
+function searchInPDF() {
+  const searchTerm = searchInput.value.toLowerCase();
+  if (!searchTerm || !pdfDocument) return;
+
+  // Store the search in history
+  const timestamp = new Date().toISOString();
+  searchHistory[timestamp] = {
+    term: searchTerm,
+    results: [] // Will be populated with results
+  };
+
+  // Clear previous results
+  searchResults = [];
+  
+  // Remove previous highlights
+  const prevHighlights = pdfContent.getElementsByClassName('highlight-wrapper');
+  while (prevHighlights.length > 0) {
+    const parent = prevHighlights[0].parentNode;
+    const textContent = prevHighlights[0].textContent;
+    parent.replaceChild(document.createTextNode(textContent), prevHighlights[0]);
+  }
+
+  const pages = pdfText.split('[Página').filter(Boolean);
+  let foundPages = new Set();
+
+  // Search through each page
+  pages.forEach((pageContent, pageIndex) => {
+    const pageNumber = pageIndex + 1;
+    let startIndex = 0;
+    const pageLower = pageContent.toLowerCase();
+    
+    while (true) {
+      const foundIndex = pageLower.indexOf(searchTerm, startIndex);
+      if (foundIndex === -1) break;
+      
+      foundPages.add(pageNumber);
+      searchResults.push({
+        page: pageNumber,
+        index: foundIndex,
+        text: pageContent.substr(foundIndex - 30, searchTerm.length + 60) // Context
+      });
+      
+      startIndex = foundIndex + searchTerm.length;
+    }
+  });
+
+  // After finding results, store them
+  if (searchResults.length > 0) {
+    searchHistory[timestamp].results = searchResults;
+    localStorage.setItem('pdfSearchHistory', JSON.stringify(searchHistory));
+    updateSearchHistoryTabs();
+
+    // Update the PDF preview with highlights
+    updatePDFPreviewWithHighlights(searchTerm);
+
+    // Show results summary
+    const foundPagesArray = Array.from(foundPages);
+    const resultsMessage = `Término "${searchTerm}" encontrado ${searchResults.length} veces en página(s): ${foundPagesArray.join(', ')}`;
+    
+    // Create results list
+    let resultsList = document.createElement('div');
+    resultsList.className = 'search-results-list';
+    resultsList.innerHTML = `<h3>Resultados de búsqueda:</h3>`;
+    
+    searchResults.forEach((result, index) => {
+      const context = result.text.replace(
+        new RegExp(searchTerm, 'gi'),
+        `<span class="highlight">${searchTerm}</span>`
+      );
+      resultsList.innerHTML += `
+        <div class="search-result-item" data-page="${result.page}" data-index="${index}">
+          <strong>Resultado ${index + 1} (Página ${result.page})</strong><br>
+          ...${context}...
+        </div>
+      `;
+    });
+
+    // Add click event handlers to search results
+    const resultItems = resultsList.getElementsByClassName('search-result-item');
+    Array.from(resultItems).forEach(item => {
+      item.style.cursor = 'pointer';
+      item.addEventListener('click', () => {
+        const page = parseInt(item.dataset.page);
+        const index = parseInt(item.dataset.index);
+        scrollToSearchResult(page, searchResults[index]);
+      });
+    });
+
+    // Add results to chat
+    addMessage(resultsMessage, 'ai-message');
+    addCustomElement(resultsList);
+
+    // Scroll to first occurrence
+    const canvases = pdfContent.getElementsByTagName('canvas');
+    const firstFound = foundPagesArray[0] - 1;
+    canvases[firstFound].scrollIntoView({ behavior: 'smooth' });
+  } else {
+    addMessage('Sistema: Término no encontrado en el documento.', 'ai-message');
+  }
+}
+
+// Add new function to clear all highlights
+function clearAllHighlights() {
+  const textLayerDivs = pdfContent.getElementsByClassName('text-layer');
+  Array.from(textLayerDivs).forEach((textLayer) => {
+    const textContent = textLayer.textContent;
+    textLayer.innerHTML = textContent;
+  });
+}
+
+// Add new function to highlight single result
+function highlightSingleResult(pageNumber, searchTerm, result) {
+  // Clear all existing highlights first
+  clearAllHighlights();
+  
+  const textLayerDivs = pdfContent.getElementsByClassName('text-layer');
+  const targetTextLayer = textLayerDivs[pageNumber - 1];
+  
+  if (targetTextLayer) {
+    const textContent = targetTextLayer.textContent;
+    const regex = new RegExp(searchTerm, 'gi');
+    targetTextLayer.innerHTML = textContent.replace(regex, (match) => {
+      return `<span class="highlight flash">${match}</span>`;
+    });
+  }
+}
+
+// Update the showSearchResults function to highlight only clicked result
+function showSearchResults(timestamp) {
+  const searchData = searchHistory[timestamp];
+  if (!searchData) return;
+
+  searchInput.value = searchData.term;
+  searchResults = searchData.results;
+  
+  // Clear all highlights first
+  clearAllHighlights();
+
+  const foundPages = [...new Set(searchData.results.map(r => r.page))];
+  const resultsMessage = `Término "${searchData.term}" encontrado ${searchData.results.length} veces en página(s): ${foundPages.join(', ')}`;
+  
+  let resultsList = document.createElement('div');
+  resultsList.className = 'search-results-list';
+  resultsList.innerHTML = `<h3>Resultados de búsqueda: "${searchData.term}"</h3>`;
+  
+  searchData.results.forEach((result, index) => {
+    const context = result.text.replace(
+      new RegExp(searchData.term, 'gi'),
+      `<span class="highlight">${searchData.term}</span>`
+    );
+    resultsList.innerHTML += `
+      <div class="search-result-item" data-page="${result.page}" data-index="${index}">
+        <strong>Resultado ${index + 1} (Página ${result.page})</strong><br>
+        ...${context}...
+      </div>
+    `;
+  });
+
+  resultsList.querySelectorAll('.search-result-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const page = parseInt(item.dataset.page);
+      const index = parseInt(item.dataset.index);
+      highlightSingleResult(page, searchData.term, searchData.results[index]);
+      scrollToSearchResult(page, searchData.results[index]);
+    });
+  });
+
+  const existingResults = document.querySelector('.search-results-list');
+  if (existingResults) {
+    existingResults.remove();
+  }
+
+  addMessage(resultsMessage, 'ai-message');
+  addCustomElement(resultsList);
+}
+
+// Update the scrollToSearchResult function
+function scrollToSearchResult(pageNumber, result) {
+  const canvases = pdfContent.getElementsByTagName('canvas');
+  const targetCanvas = canvases[pageNumber - 1];
+  
+  if (targetCanvas) {
+    targetCanvas.scrollIntoView({ behavior: 'smooth' });
+    
+    // Add extra visibility to the highlight
+    const textLayer = targetCanvas.nextElementSibling;
+    const highlights = textLayer.getElementsByClassName('highlight');
+    
+    Array.from(highlights).forEach(highlight => {
+      highlight.classList.add('flash');
+      setTimeout(() => {
+        highlight.classList.remove('flash');
+      }, 2000);
+    });
+  }
+}
+
+// Add new function to create and update search history tabs
+function updateSearchHistoryTabs() {
+  // Find or create search history container
+  let historyContainer = document.getElementById('search-history');
+  if (!historyContainer) {
+    historyContainer = document.createElement('div');
+    historyContainer.id = 'search-history';
+    historyContainer.className = 'search-history';
+    const uploadSection = document.querySelector('.upload-section');
+    uploadSection.parentNode.insertBefore(historyContainer, uploadSection.nextSibling);
+  }
+
+  // Create tabs UI
+  const tabs = document.createElement('div');
+  tabs.className = 'search-history-tabs';
+  
+  // Sort entries by timestamp (newest first)
+  const sortedEntries = Object.entries(searchHistory)
+    .sort(([timestampA], [timestampB]) => new Date(timestampB) - new Date(timestampA));
+
+  // Create tab content
+  let tabContent = `
+    <div class="tabs-header">
+      <h3>Historial de búsquedas</h3>
+      <button onclick="clearSearchHistory()" class="clear-history-btn">Limpiar historial</button>
+    </div>
+    <div class="tabs-container">
+  `;
+
+  sortedEntries.forEach(([timestamp, data], index) => {
+    const date = new Date(timestamp).toLocaleString();
+    const resultsCount = data.results.length;
+    tabContent += `
+      <div class="search-tab" onclick="showSearchResults('${timestamp}')">
+        <span class="search-term">"${data.term}"</span>
+        <span class="search-meta">${resultsCount} resultados - ${date}</span>
+      </div>
+    `;
+  });
+
+  tabContent += '</div>';
+  historyContainer.innerHTML = tabContent;
+}
+
+// Add function to show historical search results
+function showSearchResults(timestamp) {
+  const searchData = searchHistory[timestamp];
+  if (!searchData) return;
+
+  searchInput.value = searchData.term;
+  searchResults = searchData.results;
+  
+  // Clear all highlights first
+  clearAllHighlights();
+
+  const foundPages = [...new Set(searchData.results.map(r => r.page))];
+  const resultsMessage = `Término "${searchData.term}" encontrado ${searchData.results.length} veces en página(s): ${foundPages.join(', ')}`;
+  
+  let resultsList = document.createElement('div');
+  resultsList.className = 'search-results-list';
+  resultsList.innerHTML = `<h3>Resultados de búsqueda: "${searchData.term}"</h3>`;
+  
+  searchData.results.forEach((result, index) => {
+    const context = result.text.replace(
+      new RegExp(searchData.term, 'gi'),
+      `<span class="highlight">${searchData.term}</span>`
+    );
+    resultsList.innerHTML += `
+      <div class="search-result-item" data-page="${result.page}" data-index="${index}">
+        <strong>Resultado ${index + 1} (Página ${result.page})</strong><br>
+        ...${context}...
+      </div>
+    `;
+  });
+
+  resultsList.querySelectorAll('.search-result-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const page = parseInt(item.dataset.page);
+      const index = parseInt(item.dataset.index);
+      highlightSingleResult(page, searchData.term, searchData.results[index]);
+      scrollToSearchResult(page, searchData.results[index]);
+    });
+  });
+
+  const existingResults = document.querySelector('.search-results-list');
+  if (existingResults) {
+    existingResults.remove();
+  }
+
+  addMessage(resultsMessage, 'ai-message');
+  addCustomElement(resultsList);
+}
+
+// Add function to clear search history
+function clearSearchHistory() {
+  searchHistory = {};
+  localStorage.removeItem('pdfSearchHistory');
+  updateSearchHistoryTabs();
+}
+
+// Update the PDF preview with highlights
+function updatePDFPreviewWithHighlights(searchTerm) {
+  const textLayerDivs = pdfContent.getElementsByClassName('text-layer');
+  
+  Array.from(textLayerDivs).forEach((textLayer) => {
+    const textContent = textLayer.textContent;
+    const regex = new RegExp(searchTerm, 'gi');
+    textLayer.innerHTML = textContent.replace(regex, (match) => {
+      return `<span class="highlight">${match}</span>`;
+    });
+  });
+}
+
+// Add new helper function to add custom elements to chat
+function addCustomElement(element) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'message ai-message';
+  wrapper.appendChild(element);
+  chatMessages.appendChild(wrapper);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function addMessage(text, className) {
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `message ${className}`;
+  messageDiv.textContent = text;
+  chatMessages.appendChild(messageDiv);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+async function callChatGPT(question, context) {
+  const API_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
+  const API_KEY = 'your-api-key'; // Replace with your actual OpenAI API key
+
+  try {
+    // Create a better system prompt for more accurate responses
+    const systemPrompt = `You are a specialized PDF document analysis assistant. Your task is to:
+    - Provide accurate, factual answers based solely on the PDF content provided
+    - If the answer cannot be found in the context, say "No encuentro información suficiente en el PDF para responder esta pregunta"
+    - Keep answers clear and concise, but include relevant details from the document
+    - If asked about numbers or statistics, be precise in quoting them from the text
+    - When quoting from the document, use quotation marks and indicate the relevant section
+    - Maintain a professional, helpful tone`;
+
+    const response = await fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4", // Using GPT-4 for better comprehension and accuracy
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt
+          },
+          {
+            role: "user",
+            content: `Contexto del PDF:\n\n${context}\n\nPregunta: ${question}`
+          }
+        ],
+        temperature: 0.2, // Lower temperature for more focused responses
+        max_tokens: 500, // Increased token limit for more detailed responses
+        presence_penalty: 0.1, // Slight penalty to prevent repetition
+        frequency_penalty: 0.1 // Slight penalty to prevent repetitive language
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (error) {
+    console.error('Error en la llamada a ChatGPT:', error);
+    throw error;
+  }
+}
+
+async function processQuestion(question) {
+  if (!pdfText) {
+    addMessage('Sistema: Por favor, carga un PDF primero.', 'ai-message');
+    return;
+  }
+
+  if (question.trim().length < 4) {
+    addMessage('Sistema: Por favor, formula una pregunta más específica.', 'ai-message');
+    return;
+  }
+
+  try {
+    addMessage('Sistema: Analizando el documento...', 'ai-message');
+    
+    // Improve context extraction
+    const getRelevantContext = (fullText, question, maxLength = 4000) => {
+      // Split into paragraphs
+      const paragraphs = fullText.split(/\n\s*\n/);
+      
+      // Score each paragraph based on keyword matching with the question
+      const keywords = question.toLowerCase().split(/\W+/).filter(word => word.length > 3);
+      
+      const scoredParagraphs = paragraphs.map(para => {
+        const paraLower = para.toLowerCase();
+        const score = keywords.reduce((acc, keyword) => 
+          acc + (paraLower.includes(keyword) ? 1 : 0), 0);
+        return { para, score };
+      });
+
+      // Sort by score and combine most relevant paragraphs
+      let context = scoredParagraphs
+        .sort((a, b) => b.score - a.score)
+        .map(item => item.para)
+        .join('\n\n');
+
+      // Trim to max length while keeping whole paragraphs
+      if (context.length > maxLength) {
+        context = context.substring(0, maxLength);
+        context = context.substring(0, context.lastIndexOf('\n'));
+      }
+
+      return context;
+    };
+
+    // Get relevant context
+    const context = getRelevantContext(pdfText, question);
+    
+    // Call ChatGPT API
+    const response = await callChatGPT(question, context);
+    
+    // Display the response
+    addMessage(response, 'ai-message');
+  } catch (error) {
+    console.error('Error al procesar la pregunta:', error);
+    addMessage('Sistema: Hubo un error al procesar tu pregunta. Por favor, intenta nuevamente.', 'ai-message');
+  }
+}
+
+// Optional: Add error handling for rate limits
+function addRateLimitHandling() {
+  let questionCount = 0;
+  let lastQuestionTime = Date.now();
+  
+  const originalProcessQuestion = processQuestion;
+  
+  window.processQuestion = async function(question) {
+    const now = Date.now();
+    const timeSinceLastQuestion = now - lastQuestionTime;
+    
+    if (timeSinceLastQuestion < 3000) { // 3 second cooldown
+      addMessage('Sistema: Por favor, espera un momento antes de hacer otra pregunta.', 'ai-message');
+      return;
+    }
+    
+    questionCount++;
+    lastQuestionTime = now;
+    
+    if (questionCount > 30) { // Reset counter every hour
+      setTimeout(() => questionCount = 0, 3600000);
+    }
+    
+    return originalProcessQuestion(question);
+  };
+}
+
+// Call this when page loads
+addRateLimitHandling();
+
+document.getElementById('pdf-upload').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file && file.type === 'application/pdf') {
+    addMessage('Sistema: Cargando PDF...', 'ai-message');
+    loadPDF(file);
+  } else {
+    addMessage('Sistema: Por favor, selecciona un archivo PDF válido.', 'ai-message');
+  }
+});
+
+sendButton.addEventListener('click', () => {
+  const question = questionInput.value.trim();
+  if (question) {
+    addMessage(`Tú: ${question}`, 'user-message');
+    processQuestion(question);
+    questionInput.value = '';
+  }
+});
+
+searchButton.addEventListener('click', searchInPDF);
+
+searchInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    searchInPDF();
+  }
+});
+
+questionInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    sendButton.click();
+  }
+});
+
+addMessage('Sistema: ¡Bienvenido! Por favor, carga un PDF para comenzar.', 'ai-message');
+</script></body></html>
