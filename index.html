@@ -1,4 +1,12 @@
-<html><head><base href="." /><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>AI PDF Assistant</title><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js"></script><style>
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="." />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI PDF Assistant</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+  <style>
   :root {
     --primary: #2962ff;
     --secondary: #0039cb;
@@ -56,7 +64,7 @@
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
     flex: 1;
-    margin-bottom: 2rem; /* Add spacing before footer */
+    margin-bottom: 2rem;
   }
   
   .left-section {
@@ -136,7 +144,7 @@
     border: 2px dashed var(--primary);
     border-radius: 15px;
     padding: 1rem;
-    height: 600px; /* Set specific height */
+    height: 600px;
     overflow: hidden;
     position: relative;
   }
@@ -158,6 +166,8 @@
     border-radius: 15px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     position: relative;
+    display: flex;
+    flex-direction: column;
   }
   
   .chat-section::before {
@@ -187,6 +197,7 @@
     border-radius: 15px;
     max-width: 80%;
     animation: slideIn 0.3s ease-out;
+    white-space: pre-wrap;
   }
   
   .user-message {
@@ -200,6 +211,11 @@
     background: #f0f0f0;
     margin-right: auto;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .thinking-message {
+    font-style: italic;
+    color: #666;
   }
   
   .input-section {
@@ -241,47 +257,24 @@
     box-shadow: 0 4px 8px rgba(41,98,255,0.2);
   }
   
-  .search-results-list {
-    background: white;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-top: 0.5rem;
-  }
-  
-  .search-result-item {
-    margin: 0.5rem 0;
-    padding: 0.8rem;
-    border-bottom: 1px solid #eee;
-    font-size: 0.9rem;
-    transition: background-color 0.2s ease;
-    cursor: pointer;
-    border-radius: 8px;
-  }
-  
-  .search-result-item:hover {
-    background-color: #f5f5f5;
-  }
-  
   .highlight {
     background-color: #ffeb3b;
     border-radius: 2px;
     padding: 0 2px;
-    transition: background-color 0.5s ease;
   }
   
   .highlight.flash {
-    background-color: #ff9800;
-    animation: pulse 1s ease-in-out infinite;
+    animation: pulse 1s ease-in-out;
   }
   
   @keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
+    0% { background-color: #ff9800; }
+    50% { background-color: #ffeb3b; }
+    100% { background-color: #ff9800; }
   }
   
   .footer {
-    margin-top: auto; /* Push footer to bottom */
+    margin-top: auto;
     padding: 2rem 0;
     background: linear-gradient(to right, #1a237e, #0d47a1);
     color: white;
@@ -290,107 +283,11 @@
     width: 100%;
   }
   
-  .footer-content {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 2rem;
-  }
-  
-  .footer-section {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .footer-section h3 {
-    color: #90caf9;
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
+  .page-container {
     position: relative;
-  }
-  
-  .footer-section h3::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 0;
-    width: 40px;
-    height: 2px;
-    background: var(--primary);
-    transition: width 0.3s ease;
-  }
-  
-  .footer-section:hover h3::after {
-    width: 60px;
-  }
-  
-  .footer-links {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-  
-  .footer-links a {
-    color: #e3f2fd;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  
-  .footer-links a:hover {
-    color: #90caf9;
-    transform: translateX(5px);
-  }
-  
-  .footer-social {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
-  }
-  
-  .social-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    cursor: pointer;
-  }
-  
-  .social-icon:hover {
-    background: var(--primary);
-    transform: translateY(-3px);
-  }
-  
-  .footer-contact input {
-    padding: 0.8rem;
-    border-radius: 25px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.05);
-    color: white;
-    width: 100%;
-    margin-bottom: 1rem;
-  }
-  
-  .footer-contact input:focus {
-    outline: none;
-    border-color: var(--primary);
-  }
-  
-  .footer-contact button {
-    width: 100%;
-  }
-  
-  .footer-contact button:hover {
-    animation: pulse 1s infinite;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 10px;
   }
   
   .text-layer {
@@ -399,51 +296,34 @@
     top: 0;
     right: 0;
     bottom: 0;
-    overflow: hidden;
-    opacity: 0.2;
-    line-height: 1.0;
+    color: transparent;
     user-select: text;
-    color: transparent;
-    cursor: text;
+    line-height: 1.0;
   }
-  
-  .text-layer > span {
-    color: transparent;
-    position: absolute;
-    white-space: pre;
-    cursor: text;
-    transform-origin: 0% 0%;
+
+  .text-layer ::selection {
+    background: rgba(0, 150, 255, 0.3);
   }
-  
-  .text-layer .highlight {
-    color: black !important;
-    background-color: #ffeb3b;
-    padding: 0 2px;
-    border-radius: 2px;
-    opacity: 1;
+
+  @keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
   }
-  
-  .page-container {
-    position: relative;
-    margin-bottom: 20px;
-  }
-  
+
   @media (max-width: 768px) {
-    .container {
-      padding: 1rem;
-    }
-    
-    .main-content {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-      margin-bottom: 1rem;
-    }
-    
-    .pdf-preview {
-      height: 400px;
-    }
+    body { padding: 1rem; }
+    .main-content { grid-template-columns: 1fr; }
+    .pdf-preview { height: 400px; }
   }
-  </style></head><body>
+  </style>
+</head>
+<body>
   <div class="container">
     <header class="header">
       <svg class="app-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -482,14 +362,13 @@
             </button>
           </div>
         </div>
-        <div id="search-history" class="search-history"></div>
         <div id="pdf-preview" class="pdf-preview">
-          <div id="pdf-content" class="pdf-content scrollbar-style"></div>
+          <div id="pdf-content" class="pdf-content"></div>
         </div>
       </div>
   
       <section class="chat-section">
-        <div id="chat-messages" class="chat-messages scrollbar-style"></div>
+        <div id="chat-messages" class="chat-messages"></div>
         <div class="input-section">
           <input type="text" id="question-input" placeholder="Haz tu pregunta sobre el PDF..." />
           <button id="send-button">Enviar</button>
@@ -499,69 +378,7 @@
   </div>
   
   <footer class="footer">
-    <div class="footer-content">
-      <div class="footer-section">
-        <h3>Acerca de</h3>
-        <div class="footer-links">
-          <a href="https://websim.ai">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-            </svg>
-            Sobre nosotros
-          </a>
-          <a href="https://websim.ai/docs">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
-            Documentación
-          </a>
-          <a href="https://websim.ai/blog">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-            </svg>
-            Blog
-          </a>
-        </div>
-      </div>
-  
-      <div class="footer-section">
-        <h3>Contacto</h3>
-        <div class="footer-contact">
-          <input type="email" placeholder="Tu email" id="newsletter-email" />
-          <button onclick="subscribeNewsletter()">Suscribirse al newsletter</button>
-        </div>
-        <div class="footer-social">
-          <div class="social-icon" onclick="window.open('https://twitter.com/websim_ai')">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
-            </svg>
-          </div>
-          <div class="social-icon" onclick="window.open('https://github.com/websim-ai')">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-            </svg>
-          </div>
-          <div class="social-icon" onclick="window.open('https://discord.gg/websim')">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-            </svg>
-          </div>
-        </div>
-      </div>
-  
-      <div class="footer-section">
-        <h3>Stats</h3>
-        <div id="stats-container" class="footer-links">
-          <div>PDFs procesados: <span id="processed-pdfs">0</span></div>
-          <div>Búsquedas realizadas: <span id="total-searches">0</span></div>
-          <div>Preguntas respondidas: <span id="total-questions">0</span></div>
-        </div>
-      </div>
-    </div>
+      <!-- El footer se puede añadir de nuevo si se desea, lo he quitado para simplificar -->
   </footer>
   
   <script>
@@ -569,128 +386,60 @@
   
   let pdfText = '';
   let pdfDocument = null;
-  let currentPage = 1;
-  let searchResults = []; // Array to store search results
-  let searchHistory = JSON.parse(localStorage.getItem('pdfSearchHistory')) || {};
   
   const chatMessages = document.getElementById('chat-messages');
   const questionInput = document.getElementById('question-input');
   const sendButton = document.getElementById('send-button');
-  const pdfPreview = document.getElementById('pdf-preview');
   const pdfContent = document.getElementById('pdf-content');
   const searchInput = document.getElementById('search-input');
   const searchButton = document.getElementById('search-button');
   
-  let stats = JSON.parse(localStorage.getItem('pdfStats')) || {
-    processedPDFs: 0,
-    totalSearches: 0,
-    totalQuestions: 0
-  };
-  
-  function updateStats() {
-    document.getElementById('processed-pdfs').textContent = stats.processedPDFs;
-    document.getElementById('total-searches').textContent = stats.totalSearches;
-    document.getElementById('total-questions').textContent = stats.totalQuestions;
-    localStorage.setItem('pdfStats', JSON.stringify(stats));
-  }
-  
-  // Update the loadPDF function to track processed PDFs
-  const originalLoadPDF = loadPDF;
-  window.loadPDF = async function(file) {
-    await originalLoadPDF(file);
-    stats.processedPDFs++;
-    updateStats();
-  };
-  
-  // Update the searchInPDF function to track searches
-  const originalSearchInPDF = searchInPDF;
-  window.searchInPDF = function() {
-    originalSearchInPDF();
-    stats.totalSearches++;
-    updateStats();
-  };
-  
-  // Update the processQuestion function to track questions
-  const originalProcessQuestion = processQuestion;
-  window.processQuestion = async function(question) {
-    await originalProcessQuestion(question);
-    stats.totalQuestions++;
-    updateStats();
-  };
-  
-  function subscribeNewsletter() {
-    const email = document.getElementById('newsletter-email').value;
-    if (!email || !email.includes('@')) {
-      addMessage('Sistema: Por favor, introduce un email válido.', 'ai-message');
-      return;
-    }
-    
-    // Here you would typically send this to your backend
-    addMessage('Sistema: ¡Gracias por suscribirte! Te mantendremos informado.', 'ai-message');
-    document.getElementById('newsletter-email').value = '';
-  }
-  
-  // Initialize stats when page loads
-  updateStats();
-  
   async function loadPDF(file) {
     try {
+      addMessage('Sistema: Analizando PDF, por favor espera...', 'ai-message');
       const arrayBuffer = await file.arrayBuffer();
       pdfDocument = await pdfjsLib.getDocument(arrayBuffer).promise;
       pdfText = '';
-      
-      // Clear previous preview content
       pdfContent.innerHTML = '';
   
-      // Load and render all pages
       for (let i = 1; i <= pdfDocument.numPages; i++) {
         const page = await pdfDocument.getPage(i);
         const textContent = await page.getTextContent();
+        
         const pageText = textContent.items.map(item => item.str).join(' ');
-        pdfText += `[Página ${i}] ` + pageText + '\n\n';
+        pdfText += `[Página ${i}] ${pageText}\n\n`;
   
         const pageDiv = document.createElement('div');
         pageDiv.className = 'page-container';
+        pageDiv.id = `page-${i}`;
   
-        // Create canvas
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
         const viewport = page.getViewport({ scale: 1.5 });
         
         canvas.height = viewport.height;
         canvas.width = viewport.width;
-        canvas.style.marginBottom = '20px';
-        canvas.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-        canvas.style.borderRadius = '10px';
   
-        // Add selectable text layer but make it invisible
-        const textLayer = document.createElement('div');
-        textLayer.className = 'text-layer';
-        textLayer.style.width = `${viewport.width}px`;
-        textLayer.style.height = `${viewport.height}px`;
-        textLayer.style.position = 'absolute';
-        textLayer.style.top = '0';
-        textLayer.style.left = '0';
-        textLayer.style.color = 'transparent'; // Make text invisible
-        textLayer.style.userSelect = 'text'; // Keep text selectable
+        const textLayerDiv = document.createElement('div');
+        textLayerDiv.className = 'text-layer';
+        textLayerDiv.style.width = `${viewport.width}px`;
+        textLayerDiv.style.height = `${viewport.height}px`;
   
-        // Add text without visible formatting
-        textLayer.innerHTML = pageText;
-  
-        pageDiv.style.position = 'relative'; // For absolute positioning of text layer
         pageDiv.appendChild(canvas);
-        pageDiv.appendChild(textLayer);
+        pageDiv.appendChild(textLayerDiv);
         pdfContent.appendChild(pageDiv);
   
-        const renderContext = {
-          canvasContext: context,
-          viewport: viewport
-        };
-  
-        await page.render(renderContext).promise;
+        await page.render({ canvasContext: context, viewport }).promise;
+        
+        pdfjsLib.renderTextLayer({
+            textContent,
+            container: textLayerDiv,
+            viewport,
+            textDivs: []
+        });
       }
       
-      addMessage('Sistema: PDF cargado correctamente.', 'ai-message');
+      addMessage('Sistema: PDF cargado correctamente. Ya puedes hacer preguntas.', 'ai-message');
     } catch (error) {
       console.error('Error al cargar el PDF:', error);
       addMessage('Sistema: Error al cargar el PDF. Por favor, intenta con otro archivo.', 'ai-message');
@@ -698,381 +447,86 @@
   }
   
   function searchInPDF() {
-    const searchTerm = searchInput.value.toLowerCase();
+    const searchTerm = searchInput.value.trim().toLowerCase();
     if (!searchTerm || !pdfDocument) return;
-  
-    // Store the search in history
-    const timestamp = new Date().toISOString();
-    searchHistory[timestamp] = {
-      term: searchTerm,
-      results: [] // Will be populated with results
-    };
-  
-    // Clear previous results
-    searchResults = [];
-    
-    // Remove previous highlights
-    const prevHighlights = pdfContent.getElementsByClassName('highlight-wrapper');
-    while (prevHighlights.length > 0) {
-      const parent = prevHighlights[0].parentNode;
-      const textContent = prevHighlights[0].textContent;
-      parent.replaceChild(document.createTextNode(textContent), prevHighlights[0]);
-    }
-  
-    const pages = pdfText.split('[Página').filter(Boolean);
-    let foundPages = new Set();
-  
-    // Search through each page
-    pages.forEach((pageContent, pageIndex) => {
-      const pageNumber = pageIndex + 1;
-      let startIndex = 0;
-      const pageLower = pageContent.toLowerCase();
-      
-      while (true) {
-        const foundIndex = pageLower.indexOf(searchTerm, startIndex);
-        if (foundIndex === -1) break;
-        
-        foundPages.add(pageNumber);
-        searchResults.push({
-          page: pageNumber,
-          index: foundIndex,
-          text: pageContent.substr(foundIndex - 30, searchTerm.length + 60) // Context
-        });
-        
-        startIndex = foundIndex + searchTerm.length;
-      }
-    });
-  
-    // After finding results, store them
-    if (searchResults.length > 0) {
-      searchHistory[timestamp].results = searchResults;
-      localStorage.setItem('pdfSearchHistory', JSON.stringify(searchHistory));
-      updateSearchHistoryTabs();
-  
-      // Update the PDF preview with highlights
-      updatePDFPreviewWithHighlights(searchTerm);
-  
-      // Show results summary
-      const foundPagesArray = Array.from(foundPages);
-      const resultsMessage = `Término "${searchTerm}" encontrado ${searchResults.length} veces en página(s): ${foundPagesArray.join(', ')}`;
-      
-      // Create results list
-      let resultsList = document.createElement('div');
-      resultsList.className = 'search-results-list';
-      resultsList.innerHTML = `<h3>Resultados de búsqueda:</h3>`;
-      
-      searchResults.forEach((result, index) => {
-        const context = result.text.replace(
-          new RegExp(searchTerm, 'gi'),
-          `<span class="highlight">${searchTerm}</span>`
-        );
-        resultsList.innerHTML += `
-          <div class="search-result-item" data-page="${result.page}" data-index="${index}">
-            <strong>Resultado ${index + 1} (Página ${result.page})</strong><br>
-            ...${context}...
-          </div>
-        `;
-      });
-  
-      // Add click event handlers to search results
-      const resultItems = resultsList.getElementsByClassName('search-result-item');
-      Array.from(resultItems).forEach(item => {
-        item.style.cursor = 'pointer';
-        item.addEventListener('click', () => {
-          const page = parseInt(item.dataset.page);
-          const index = parseInt(item.dataset.index);
-          scrollToSearchResult(page, searchResults[index]);
-        });
-      });
-  
-      // Add results to chat
-      addMessage(resultsMessage, 'ai-message');
-      addCustomElement(resultsList);
-  
-      // Scroll to first occurrence
-      const canvases = pdfContent.getElementsByTagName('canvas');
-      const firstFound = foundPagesArray[0] - 1;
-      canvases[firstFound].scrollIntoView({ behavior: 'smooth' });
-    } else {
-      addMessage('Sistema: Término no encontrado en el documento.', 'ai-message');
-    }
-  }
-  
-  // Add new function to clear all highlights
-  function clearAllHighlights() {
-    const textLayerDivs = pdfContent.getElementsByClassName('text-layer');
-    Array.from(textLayerDivs).forEach((textLayer) => {
-      const textContent = textLayer.textContent;
-      textLayer.innerHTML = textContent;
-    });
-  }
-  
-  // Add new function to highlight single result
-  function highlightSingleResult(pageNumber, searchTerm, result) {
-    // Clear all existing highlights first
-    clearAllHighlights();
-    
-    const textLayerDivs = pdfContent.getElementsByClassName('text-layer');
-    const targetTextLayer = textLayerDivs[pageNumber - 1];
-    
-    if (targetTextLayer) {
-      const textContent = targetTextLayer.textContent;
-      const regex = new RegExp(searchTerm, 'gi');
-      targetTextLayer.innerHTML = textContent.replace(regex, (match) => {
-        return `<span class="highlight flash">${match}</span>`;
-      });
-    }
-  }
-  
-  // Update the showSearchResults function to highlight only clicked result
-  function showSearchResults(timestamp) {
-    const searchData = searchHistory[timestamp];
-    if (!searchData) return;
-  
-    searchInput.value = searchData.term;
-    searchResults = searchData.results;
-    
-    // Clear all highlights first
+
     clearAllHighlights();
   
-    const foundPages = [...new Set(searchData.results.map(r => r.page))];
-    const resultsMessage = `Término "${searchData.term}" encontrado ${searchData.results.length} veces en página(s): ${foundPages.join(', ')}`;
-    
-    let resultsList = document.createElement('div');
-    resultsList.className = 'search-results-list';
-    resultsList.innerHTML = `<h3>Resultados de búsqueda: "${searchData.term}"</h3>`;
-    
-    searchData.results.forEach((result, index) => {
-      const context = result.text.replace(
-        new RegExp(searchData.term, 'gi'),
-        `<span class="highlight">${searchData.term}</span>`
-      );
-      resultsList.innerHTML += `
-        <div class="search-result-item" data-page="${result.page}" data-index="${index}">
-          <strong>Resultado ${index + 1} (Página ${result.page})</strong><br>
-          ...${context}...
-        </div>
-      `;
+    const textLayers = document.querySelectorAll('.text-layer');
+    let foundCount = 0;
+    let firstFoundPage = -1;
+
+    textLayers.forEach((layer, index) => {
+        const pageNum = index + 1;
+        const textSpans = layer.querySelectorAll('span');
+        textSpans.forEach(span => {
+            if (span.textContent.toLowerCase().includes(searchTerm)) {
+                if (firstFoundPage === -1) firstFoundPage = pageNum;
+                foundCount++;
+                const regex = new RegExp(`(${searchTerm})`, 'gi');
+                span.innerHTML = span.textContent.replace(regex, `<mark class="highlight flash">$1</mark>`);
+            }
+        });
     });
-  
-    resultsList.querySelectorAll('.search-result-item').forEach(item => {
-      item.addEventListener('click', () => {
-        const page = parseInt(item.dataset.page);
-        const index = parseInt(item.dataset.index);
-        highlightSingleResult(page, searchData.term, searchData.results[index]);
-        scrollToSearchResult(page, searchData.results[index]);
-      });
-    });
-  
-    const existingResults = document.querySelector('.search-results-list');
-    if (existingResults) {
-      existingResults.remove();
-    }
-  
-    addMessage(resultsMessage, 'ai-message');
-    addCustomElement(resultsList);
-  }
-  
-  // Update the scrollToSearchResult function
-  function scrollToSearchResult(pageNumber, result) {
-    const canvases = pdfContent.getElementsByTagName('canvas');
-    const targetCanvas = canvases[pageNumber - 1];
-    
-    if (targetCanvas) {
-      targetCanvas.scrollIntoView({ behavior: 'smooth' });
-      
-      // Add extra visibility to the highlight
-      const textLayer = targetCanvas.nextElementSibling;
-      const highlights = textLayer.getElementsByClassName('highlight');
-      
-      Array.from(highlights).forEach(highlight => {
-        highlight.classList.add('flash');
+
+    if (foundCount > 0) {
+        addMessage(`Término "${searchTerm}" encontrado ${foundCount} veces.`, 'ai-message');
+        document.getElementById(`page-${firstFoundPage}`).scrollIntoView({ behavior: 'smooth' });
         setTimeout(() => {
-          highlight.classList.remove('flash');
+            document.querySelectorAll('.highlight.flash').forEach(el => el.classList.remove('flash'));
         }, 2000);
-      });
+    } else {
+        addMessage(`Término "${searchTerm}" no encontrado en el documento.`, 'ai-message');
     }
   }
-  
-  // Add new function to create and update search history tabs
-  function updateSearchHistoryTabs() {
-    // Find or create search history container
-    let historyContainer = document.getElementById('search-history');
-    if (!historyContainer) {
-      historyContainer = document.createElement('div');
-      historyContainer.id = 'search-history';
-      historyContainer.className = 'search-history';
-      const uploadSection = document.querySelector('.upload-section');
-      uploadSection.parentNode.insertBefore(historyContainer, uploadSection.nextSibling);
-    }
-  
-    // Create tabs UI
-    const tabs = document.createElement('div');
-    tabs.className = 'search-history-tabs';
-    
-    // Sort entries by timestamp (newest first)
-    const sortedEntries = Object.entries(searchHistory)
-      .sort(([timestampA], [timestampB]) => new Date(timestampB) - new Date(timestampA));
-  
-    // Create tab content
-    let tabContent = `
-      <div class="tabs-header">
-        <h3>Historial de búsquedas</h3>
-        <button onclick="clearSearchHistory()" class="clear-history-btn">Limpiar historial</button>
-      </div>
-      <div class="tabs-container">
-    `;
-  
-    sortedEntries.forEach(([timestamp, data], index) => {
-      const date = new Date(timestamp).toLocaleString();
-      const resultsCount = data.results.length;
-      tabContent += `
-        <div class="search-tab" onclick="showSearchResults('${timestamp}')">
-          <span class="search-term">"${data.term}"</span>
-          <span class="search-meta">${resultsCount} resultados - ${date}</span>
-        </div>
-      `;
-    });
-  
-    tabContent += '</div>';
-    historyContainer.innerHTML = tabContent;
-  }
-  
-  // Add function to show historical search results
-  function showSearchResults(timestamp) {
-    const searchData = searchHistory[timestamp];
-    if (!searchData) return;
-  
-    searchInput.value = searchData.term;
-    searchResults = searchData.results;
-    
-    // Clear all highlights first
-    clearAllHighlights();
-  
-    const foundPages = [...new Set(searchData.results.map(r => r.page))];
-    const resultsMessage = `Término "${searchData.term}" encontrado ${searchData.results.length} veces en página(s): ${foundPages.join(', ')}`;
-    
-    let resultsList = document.createElement('div');
-    resultsList.className = 'search-results-list';
-    resultsList.innerHTML = `<h3>Resultados de búsqueda: "${searchData.term}"</h3>`;
-    
-    searchData.results.forEach((result, index) => {
-      const context = result.text.replace(
-        new RegExp(searchData.term, 'gi'),
-        `<span class="highlight">${searchData.term}</span>`
-      );
-      resultsList.innerHTML += `
-        <div class="search-result-item" data-page="${result.page}" data-index="${index}">
-          <strong>Resultado ${index + 1} (Página ${result.page})</strong><br>
-          ...${context}...
-        </div>
-      `;
-    });
-  
-    resultsList.querySelectorAll('.search-result-item').forEach(item => {
-      item.addEventListener('click', () => {
-        const page = parseInt(item.dataset.page);
-        const index = parseInt(item.dataset.index);
-        highlightSingleResult(page, searchData.term, searchData.results[index]);
-        scrollToSearchResult(page, searchData.results[index]);
+
+  function clearAllHighlights() {
+      const marks = document.querySelectorAll('mark.highlight');
+      marks.forEach(mark => {
+          const parent = mark.parentNode;
+          parent.replaceWith(parent.textContent);
       });
-    });
-  
-    const existingResults = document.querySelector('.search-results-list');
-    if (existingResults) {
-      existingResults.remove();
-    }
-  
-    addMessage(resultsMessage, 'ai-message');
-    addCustomElement(resultsList);
   }
   
-  // Add function to clear search history
-  function clearSearchHistory() {
-    searchHistory = {};
-    localStorage.removeItem('pdfSearchHistory');
-    updateSearchHistoryTabs();
-  }
-  
-  // Update the PDF preview with highlights
-  function updatePDFPreviewWithHighlights(searchTerm) {
-    const textLayerDivs = pdfContent.getElementsByClassName('text-layer');
-    
-    Array.from(textLayerDivs).forEach((textLayer) => {
-      const textContent = textLayer.textContent;
-      const regex = new RegExp(searchTerm, 'gi');
-      textLayer.innerHTML = textContent.replace(regex, (match) => {
-        return `<span class="highlight">${match}</span>`;
-      });
-    });
-  }
-  
-  // Add new helper function to add custom elements to chat
-  function addCustomElement(element) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'message ai-message';
-    wrapper.appendChild(element);
-    chatMessages.appendChild(wrapper);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-  }
-  
-  function addMessage(text, className) {
+  function addMessage(text, className, isThinking = false) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${className}`;
+    if(isThinking) {
+      messageDiv.classList.add('thinking-message');
+    }
     messageDiv.textContent = text;
     chatMessages.appendChild(messageDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
+    return messageDiv;
   }
   
-  async function callChatGPT(question, context) {
-    const API_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
-    const API_KEY = 'your-api-key'; // Replace with your actual OpenAI API key
-  
-    try {
-      // Create a better system prompt for more accurate responses
-      const systemPrompt = `You are a specialized PDF document analysis assistant. Your task is to:
-      - Provide accurate, factual answers based solely on the PDF content provided
-      - If the answer cannot be found in the context, say "No encuentro información suficiente en el PDF para responder esta pregunta"
-      - Keep answers clear and concise, but include relevant details from the document
-      - If asked about numbers or statistics, be precise in quoting them from the text
-      - When quoting from the document, use quotation marks and indicate the relevant section
-      - Maintain a professional, helpful tone`;
-  
-      const response = await fetch(API_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${API_KEY}`
-        },
-        body: JSON.stringify({
-          model: "gpt-4", // Using GPT-4 for better comprehension and accuracy
-          messages: [
-            {
-              role: "system",
-              content: systemPrompt
-            },
-            {
-              role: "user",
-              content: `Contexto del PDF:\n\n${context}\n\nPregunta: ${question}`
-            }
-          ],
-          temperature: 0.2, // Lower temperature for more focused responses
-          max_tokens: 500, // Increased token limit for more detailed responses
-          presence_penalty: 0.1, // Slight penalty to prevent repetition
-          frequency_penalty: 0.1 // Slight penalty to prevent repetitive language
-        })
-      });
-  
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+  // ===================================================================
+  // ¡AQUÍ ESTÁ EL CAMBIO!
+  // Esta función ahora llama a nuestro servidor intermediario seguro
+  // y ya no contiene ninguna clave de API.
+  // ===================================================================
+  async function callGroqAPI(question, context) {
+      try {
+          const response = await fetch('/api/chat', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ question, context })
+          });
+
+          if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(`Error del servidor: ${errorData.error}`);
+          }
+
+          const data = await response.json();
+          return data.choices[0].message.content.trim();
+
+      } catch (error) {
+          console.error('Error al llamar al servidor intermediario:', error);
+          throw error;
       }
-  
-      const data = await response.json();
-      return data.choices[0].message.content;
-    } catch (error) {
-      console.error('Error en la llamada a ChatGPT:', error);
-      throw error;
-    }
   }
   
   async function processQuestion(question) {
@@ -1085,88 +539,26 @@
       addMessage('Sistema: Por favor, formula una pregunta más específica.', 'ai-message');
       return;
     }
+
+    const thinkingMessage = addMessage('IA está pensando...', 'ai-message', true);
   
     try {
-      addMessage('Sistema: Analizando el documento...', 'ai-message');
+      const context = pdfText;
+      const response = await callGroqAPI(question, context);
       
-      // Improve context extraction
-      const getRelevantContext = (fullText, question, maxLength = 4000) => {
-        // Split into paragraphs
-        const paragraphs = fullText.split(/\n\s*\n/);
-        
-        // Score each paragraph based on keyword matching with the question
-        const keywords = question.toLowerCase().split(/\W+/).filter(word => word.length > 3);
-        
-        const scoredParagraphs = paragraphs.map(para => {
-          const paraLower = para.toLowerCase();
-          const score = keywords.reduce((acc, keyword) => 
-            acc + (paraLower.includes(keyword) ? 1 : 0), 0);
-          return { para, score };
-        });
-  
-        // Sort by score and combine most relevant paragraphs
-        let context = scoredParagraphs
-          .sort((a, b) => b.score - a.score)
-          .map(item => item.para)
-          .join('\n\n');
-  
-        // Trim to max length while keeping whole paragraphs
-        if (context.length > maxLength) {
-          context = context.substring(0, maxLength);
-          context = context.substring(0, context.lastIndexOf('\n'));
-        }
-  
-        return context;
-      };
-  
-      // Get relevant context
-      const context = getRelevantContext(pdfText, question);
-      
-      // Call ChatGPT API
-      const response = await callChatGPT(question, context);
-      
-      // Display the response
-      addMessage(response, 'ai-message');
+      thinkingMessage.textContent = response;
+      thinkingMessage.classList.remove('thinking-message');
+
     } catch (error) {
       console.error('Error al procesar la pregunta:', error);
-      addMessage('Sistema: Hubo un error al procesar tu pregunta. Por favor, intenta nuevamente.', 'ai-message');
+      thinkingMessage.textContent = `Error: ${error.message}. Revisa la consola para más detalles.`;
+      thinkingMessage.classList.remove('thinking-message');
     }
   }
-  
-  // Optional: Add error handling for rate limits
-  function addRateLimitHandling() {
-    let questionCount = 0;
-    let lastQuestionTime = Date.now();
-    
-    const originalProcessQuestion = processQuestion;
-    
-    window.processQuestion = async function(question) {
-      const now = Date.now();
-      const timeSinceLastQuestion = now - lastQuestionTime;
-      
-      if (timeSinceLastQuestion < 3000) { // 3 second cooldown
-        addMessage('Sistema: Por favor, espera un momento antes de hacer otra pregunta.', 'ai-message');
-        return;
-      }
-      
-      questionCount++;
-      lastQuestionTime = now;
-      
-      if (questionCount > 30) { // Reset counter every hour
-        setTimeout(() => questionCount = 0, 3600000);
-      }
-      
-      return originalProcessQuestion(question);
-    };
-  }
-  
-  // Call this when page loads
-  addRateLimitHandling();
   
   document.getElementById('pdf-upload').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file && file.type === 'application/pdf') {
-      addMessage('Sistema: Cargando PDF...', 'ai-message');
       loadPDF(file);
     } else {
       addMessage('Sistema: Por favor, selecciona un archivo PDF válido.', 'ai-message');
@@ -1197,4 +589,6 @@
   });
   
   addMessage('Sistema: ¡Bienvenido! Por favor, carga un PDF para comenzar.', 'ai-message');
-  </script></body></html>
+  </script>
+</body>
+</html>
