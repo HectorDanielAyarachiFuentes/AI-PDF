@@ -1,45 +1,46 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-  <!-- Metadatos Esenciales -->
+  <base href="." />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI PDF Assistant</title>
-  <meta name="description" content="Sube tu archivo PDF y pregunta lo que quieras sobre su contenido con ayuda de IA." />
-
-  <!-- 
-    ====================================================================
-    Favicon Autocontenido (Self-contained)
-    No necesitas un archivo favicon.svg. ¡El ícono está aquí mismo!
-    ====================================================================
-  -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3cdefs%3e%3cstyle%3e.bg %7b fill: %23333333; %7d .stroke %7b stroke: %2329B6F6; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; %7d .accent %7b fill: %2329B6F6; %7d .star %7b fill: %23FFFFFF; %7d%3c/style%3e%3c/defs%3e%3cpath class='bg stroke' d='M20 5 H70 L95 30 V95 H20 Z'/%3e%3cpath class='stroke' fill='none' d='M70 5 V30 H95'/%3e%3ccircle class='accent' cx='50' cy='55' r='28'/%3e%3cpath class='accent' d='M35 83 L50 72 L65 83 Z'/%3e%3cpath class='star' d='M50 42 l 5 10 l 10 5 l -10 5 l -5 10 l -5 -10 l -10 -5 l 10 -5 Z'/%3e%3c/svg%3e">
-  <meta name="theme-color" content="#212121">
-  
-  <!-- Dependencia de PDF.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
-  
   <style>
   /* =================================================================== */
   /*  1. Variables de Diseño (Estilo ChatGPT) y Reseteo Global
   /* =================================================================== */
   :root {
-    --gpt-bg: #212121;
-    --gpt-surface: #333333;
-    --gpt-surface-light: #444444;
-    --gpt-border: #555555;
-    --gpt-text-primary: #EAEAEA;
-    --gpt-text-secondary: #B0B0B0;
-    --gpt-accent: #29B6F6;
+    /* Paleta de colores principal (Tema Oscuro) */
+    --gpt-bg: #212121; /* Fondo principal muy oscuro */
+    --gpt-surface: #333333; /* Superficie para tarjetas y elementos */
+    --gpt-surface-light: #444444; /* Para elementos resaltados como la respuesta de la IA */
+    --gpt-border: #555555; /* Bordes sutiles */
+    
+    /* Paleta de texto */
+    --gpt-text-primary: #EAEAEA; /* Texto principal claro */
+    --gpt-text-secondary: #B0B0B0; /* Texto secundario o de ayuda */
+
+    /* Colores de acento */
+    --gpt-accent: #29B6F6; /* Un azul cian brillante para acentos */
     --gpt-accent-dark: #039BE5;
-    --gpt-highlight: rgba(255, 235, 59, 0.8);
+    --gpt-highlight: rgba(255, 235, 59, 0.8); /* Amarillo para resaltar búsquedas */
+    
+    /* Tipografía y espaciado */
     --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-    --content-max-width: 820px;
+    --content-max-width: 820px; /* Ancho máximo para el contenido del chat para legibilidad */
     --border-radius: 12px;
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
 
   body {
     font-family: var(--font-sans);
@@ -54,6 +55,7 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Scrollbar personalizado para el tema oscuro */
   ::-webkit-scrollbar { width: 10px; }
   ::-webkit-scrollbar-track { background: var(--gpt-bg); }
   ::-webkit-scrollbar-thumb { background-color: var(--gpt-surface-light); border-radius: 20px; border: 2px solid var(--gpt-bg); }
@@ -62,29 +64,85 @@
   /* =================================================================== */
   /*  2. Layout Principal
   /* =================================================================== */
-  .container { width: 100%; max-width: 1600px; margin: 0 auto; display: flex; flex-direction: column; flex-grow: 1; }
+  .container {
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+  
   .header { text-align: center; margin-bottom: 2rem; }
   .header h1 { font-size: 2rem; font-weight: 600; color: var(--gpt-text-primary); }
   .header p { font-size: 1rem; color: var(--gpt-text-secondary); margin-top: 0.25rem; }
+  .app-logo { display: none; } /* El logo no encaja en la estética minimalista */
 
-  .main-content { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2rem; flex: 1; min-height: 0; }
-  .left-section { display: flex; flex-direction: column; gap: 1.5rem; }
+  .main-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 2rem;
+    flex: 1;
+    min-height: 0; /* Solución para flexbox en grids */
+  }
+
+  .left-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
   
   /* =================================================================== */
   /*  3. Sección Izquierda (Upload y Preview de PDF)
   /* =================================================================== */
-  .upload-section, .pdf-preview { background-color: var(--gpt-surface); border: 1px solid var(--gpt-border); border-radius: var(--border-radius); padding: 1.5rem; transition: border-color 0.3s ease; }
-  .upload-section:hover, .pdf-preview:hover { border-color: var(--gpt-accent); }
+  .upload-section, .pdf-preview {
+    background-color: var(--gpt-surface);
+    border: 1px solid var(--gpt-border);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    transition: border-color 0.3s ease;
+  }
+  
+  .upload-section:hover, .pdf-preview:hover {
+      border-color: var(--gpt-accent);
+  }
 
-  .upload-label { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; padding: 2rem; border: 2px dashed var(--gpt-border); border-radius: 10px; cursor: pointer; transition: all 0.2s ease; text-align: center; color: var(--gpt-text-secondary); }
-  .upload-label:hover { background-color: rgba(255, 255, 255, 0.03); border-color: var(--gpt-text-secondary); }
-  .upload-icon { width: 40px; height: 40px; color: var(--gpt-text-secondary); transition: color 0.2s ease; }
+  .upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 2rem;
+    border: 2px dashed var(--gpt-border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    color: var(--gpt-text-secondary);
+  }
+
+  .upload-label:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+    border-color: var(--gpt-text-secondary);
+  }
+
+  .upload-icon {
+    width: 40px;
+    height: 40px;
+    color: var(--gpt-text-secondary);
+    transition: color 0.2s ease;
+  }
   .upload-label:hover .upload-icon { color: var(--gpt-text-primary); }
   input[type="file"] { display: none; }
   
   .search-section { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
   
-  .pdf-preview { flex-grow: 1; padding: 0.5rem; overflow: hidden; }
+  .pdf-preview {
+    flex-grow: 1;
+    padding: 0.5rem;
+    overflow: hidden;
+  }
   .pdf-content { height: 100%; overflow-y: auto; padding: 1rem; }
   .page-container { margin: 0 auto 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border-radius: 4px; overflow: hidden; }
   .page-container canvas { display: block; max-width: 100%; height: auto; }
@@ -92,97 +150,206 @@
   .text-layer ::selection { background: rgba(41, 182, 246, 0.4); }
   
   /* =================================================================== */
-  /*  4. Sección Derecha (Chat)
+  /*  4. Sección Derecha (Chat) - EL CAMBIO MÁS GRANDE
   /* =================================================================== */
-  .chat-section { background: transparent; padding: 0; display: flex; flex-direction: column; justify-content: flex-end; }
-  .chat-messages { flex-grow: 1; overflow-y: auto; padding: 1rem 0.5rem; width: 100%; max-width: var(--content-max-width); margin: 0 auto; }
+  .chat-section {
+    background: transparent;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* Alinea el input al final */
+  }
 
-  /* Estructura de Mensajes (Clave para JS) */
-  .message { margin: 0 auto 1rem; max-width: 100%; animation: fadeIn 0.5s ease; white-space: pre-wrap; word-wrap: break-word; display: flex; gap: 1.25rem; align-items: flex-start; }
-  .message .avatar { width: 32px; height: 32px; flex-shrink: 0; border-radius: 4px; font-size: 16px; font-weight: bold; color: white; text-align: center; line-height: 32px; }
-  .message .message-content { flex-grow: 1; }
+  .chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1rem 0.5rem;
+    width: 100%;
+    max-width: var(--content-max-width);
+    margin: 0 auto; /* Centra el contenedor de mensajes */
+  }
 
-  .user-message .avatar { background-color: #7E57C2; }
-  .user-message .message-content { padding-top: 0.5rem; } /* Pequeño ajuste de alineación */
-
-  .ai-message { background-color: var(--gpt-surface-light); border-radius: var(--border-radius); border: 1px solid var(--gpt-border); }
-  .ai-message .avatar { background-color: var(--gpt-accent); }
-  .ai-message .message-content { padding: 1rem; }
+  .message {
+    padding: 1.25rem;
+    margin: 0 auto 1rem; /* Centrado y con espacio */
+    max-width: 100%;
+    animation: fadeIn 0.5s ease;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+  }
   
-  .thinking-message .message-content { font-style: italic; color: var(--gpt-text-secondary); animation: thinking-pulse 1.5s infinite ease-in-out; }
+  .message::before { /* Avatar genérico */
+    content: '';
+    display: block;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+    line-height: 32px;
+  }
+
+  .user-message { /* El usuario no tiene fondo de color */ }
+  .user-message::before {
+      content: 'TÚ';
+      background-color: #7E57C2; /* Un morado para el usuario */
+  }
+
+  .ai-message {
+    background-color: var(--gpt-surface-light);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gpt-border);
+  }
+  .ai-message::before {
+      content: 'AI';
+      background-color: var(--gpt-accent); /* Verde azulado para la IA */
+  }
+  
+  .thinking-message {
+    font-style: italic;
+    color: var(--gpt-text-secondary);
+    animation: thinking-pulse 1.5s infinite ease-in-out;
+  }
   @keyframes thinking-pulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
 
-  .input-section { width: 100%; max-width: var(--content-max-width); margin: 0 auto; padding: 1rem 0; display: flex; gap: 0.75rem; background-color: var(--gpt-bg); position: sticky; bottom: 0; }
+  .input-section {
+    width: 100%;
+    max-width: var(--content-max-width);
+    margin: 0 auto; /* Centra la barra de input */
+    padding: 1rem 0;
+    display: flex;
+    gap: 0.75rem;
+    background-color: var(--gpt-bg); /* Para que esté sobre el scroll */
+    position: sticky;
+    bottom: 0;
+  }
   
   /* =================================================================== */
   /*  5. Elementos de Formulario (Inputs, Botones)
   /* =================================================================== */
-  input[type="text"] { flex-grow: 1; padding: 0.9rem 1.25rem; border-radius: var(--border-radius); border: 1px solid var(--gpt-border); background-color: var(--gpt-surface); font-size: 1rem; color: var(--gpt-text-primary); transition: all 0.2s ease; }
-  input[type="text"]:focus { outline: none; border-color: var(--gpt-accent); background-color: var(--gpt-surface-light); }
+  input[type="text"] {
+    flex-grow: 1;
+    padding: 0.9rem 1.25rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gpt-border);
+    background-color: var(--gpt-surface);
+    font-size: 1rem;
+    color: var(--gpt-text-primary);
+    transition: all 0.2s ease;
+  }
   
-  button { padding: 0.8rem 1.25rem; border-radius: var(--border-radius); border: none; background: var(--gpt-accent); color: var(--gpt-bg); cursor: pointer; transition: all 0.2s ease; font-weight: 600; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
-  button:hover:not(:disabled) { background: var(--gpt-accent-dark); transform: translateY(-1px); }
+  input[type="text"]:focus {
+    outline: none;
+    border-color: var(--gpt-accent);
+    background-color: var(--gpt-surface-light);
+  }
+
+  button {
+    padding: 0.8rem 1.25rem;
+    border-radius: var(--border-radius);
+    border: none;
+    background: var(--gpt-accent);
+    color: var(--gpt-bg);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  button:hover:not(:disabled) {
+    background: var(--gpt-accent-dark);
+    transform: translateY(-1px);
+  }
   
-  #search-button { background-color: var(--gpt-surface-light); color: var(--gpt-text-primary); border: 1px solid var(--gpt-border); }
+  #search-button {
+    background-color: var(--gpt-surface-light);
+    color: var(--gpt-text-primary);
+    border: 1px solid var(--gpt-border);
+  }
   #search-button:hover { background-color: var(--gpt-border); }
-  .search-icon { color: var(--gpt-text-primary); width: 18px; height: 18px; }
+  .search-icon { color: var(--gpt-text-primary); }
 
   /* =================================================================== */
   /*  6. Utilidades y Animaciones
   /* =================================================================== */
-  .highlight { background-color: var(--gpt-highlight); color: black; border-radius: 3px; padding: 0 3px; font-weight: 500; }
+  .highlight {
+    background-color: var(--gpt-highlight);
+    color: black;
+    border-radius: 3px;
+    padding: 0 3px;
+    font-weight: 500;
+  }
+  
   .highlight.flash { animation: pulse 1s ease-in-out; }
   @keyframes pulse { 0%, 100% { background-color: var(--gpt-highlight); } 50% { background-color: var(--gpt-accent); color: white; } }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
   /* =================================================================== */
   /*  7. Media Queries para Responsividad
   /* =================================================================== */
   @media (max-width: 1024px) {
-    body { padding: 1rem; }
     .main-content { grid-template-columns: 1fr; }
     .chat-section { min-height: 80vh; }
     .pdf-preview { height: 70vh; }
+    body { padding: 1rem; }
   }
+
   @media (max-width: 768px) {
-    :root { --content-max-width: 100%; }
     body { padding: 1rem 0.5rem; }
+    :root { --content-max-width: 100%; } /* El chat ocupa todo el ancho */
     .chat-messages { padding: 1rem 0; }
     .input-section { padding: 0.5rem; }
-    .message { gap: 1rem; }
-    .message .message-content { padding: 1rem; }
-    .message .avatar { width: 28px; height: 28px; line-height: 28px; font-size: 14px; }
+    .message { gap: 1rem; padding: 1rem; }
+    .message::before { width: 28px; height: 28px; line-height: 28px; font-size: 14px; }
   }
-  @media (max-width: 320px) {
-    body { padding: 0.5rem 0.25rem; }
-    .header h1 { font-size: 1.5rem; }
-    .message { gap: 0.75rem; }
-    .message .message-content { padding: 0.75rem; font-size: 0.9rem; }
-    .message .avatar { width: 24px; height: 24px; line-height: 24px; font-size: 12px; }
-    input[type="text"], button { padding: 0.75rem 1rem; font-size: 0.9rem; }
-  }
-  </style>
+</style>
 </head>
 <body>
   <div class="container">
     <header class="header">
-      <h1>AI PDF Assistant</h1>
-      <p>Sube tu archivo PDF y pregunta lo que quieras sobre su contenido</p>
+      <svg class="app-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M14 2V8H20" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M16 13H8" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M16 17H8" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M10 9H9H8" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div>
+        <h1>AI PDF Assistant</h1>
+        <p>Sube tu archivo PDF y pregunta lo que quieras sobre su contenido</p>
+      </div>
     </header>
   
     <div class="main-content">
       <div class="left-section">
         <div class="upload-section">
           <label for="pdf-upload" class="upload-label">
-            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Arrastra tu PDF aquí o haz click</span>
+            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Arrastra tu PDF aquí o haz click para seleccionar</span>
           </label>
           <input type="file" id="pdf-upload" accept=".pdf" />
           <div class="search-section">
             <input type="text" id="search-input" placeholder="Buscar en el PDF..." />
             <button id="search-button">
-              <svg class="search-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <span>Buscar</span>
+              <svg class="search-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Buscar
             </button>
           </div>
         </div>
@@ -201,211 +368,218 @@
     </div>
   </div>
   
+  <footer class="footer">
+      <!-- El footer se puede añadir de nuevo si se desea, lo he quitado para simplificar -->
+  </footer>
+  
   <script>
-    // Configuración global para PDF.js
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
   
-    // Variables globales
-    let pdfText = '';
-    let pdfDocument = null;
+  let pdfText = '';
+  let pdfDocument = null;
   
-    // Referencias a elementos del DOM
-    const chatMessages = document.getElementById('chat-messages');
-    const questionInput = document.getElementById('question-input');
-    const sendButton = document.getElementById('send-button');
-    const pdfContent = document.getElementById('pdf-content');
-    const searchInput = document.getElementById('search-input');
-    const searchButton = document.getElementById('search-button');
-    
-    /**
-     * Añade un mensaje al chat con la estructura y estilos correctos.
-     * @param {string} text - El contenido del mensaje.
-     * @param {string} role - El rol ('user', 'ai', o 'system').
-     * @param {boolean} [isThinking=false] - Si es un mensaje de 'pensando'.
-     * @returns {HTMLElement} El elemento del mensaje creado.
-     */
-    function addMessage(text, role, isThinking = false) {
-        const messageContainer = document.createElement('div');
-        messageContainer.className = 'message';
-        if (role === 'user') messageContainer.classList.add('user-message');
-        if (role === 'ai' || role === 'system') messageContainer.classList.add('ai-message');
-        if (isThinking) messageContainer.classList.add('thinking-message');
-        
-        const avatar = document.createElement('div');
-        avatar.className = 'avatar';
-        if (role === 'user') avatar.textContent = 'TÚ';
-        if (role === 'ai') avatar.textContent = 'AI';
-        if (role === 'system') avatar.textContent = 'S'; // Para Sistema
-
-        const messageContent = document.createElement('div');
-        messageContent.className = 'message-content';
-        messageContent.textContent = text;
-        
-        messageContainer.append(avatar, messageContent);
-        chatMessages.appendChild(messageContainer);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-        return messageContainer;
-    }
-
-    /**
-     * Carga y renderiza un archivo PDF.
-     * @param {File} file - El archivo PDF a cargar.
-     */
-    async function loadPDF(file) {
-      addMessage('Analizando PDF, por favor espera...', 'system');
-      try {
-        const arrayBuffer = await file.arrayBuffer();
-        pdfDocument = await pdfjsLib.getDocument(arrayBuffer).promise;
-        pdfText = '';
-        pdfContent.innerHTML = '';
+  const chatMessages = document.getElementById('chat-messages');
+  const questionInput = document.getElementById('question-input');
+  const sendButton = document.getElementById('send-button');
+  const pdfContent = document.getElementById('pdf-content');
+  const searchInput = document.getElementById('search-input');
+  const searchButton = document.getElementById('search-button');
   
-        for (let i = 1; i <= pdfDocument.numPages; i++) {
-            const page = await pdfDocument.getPage(i);
-            const textContent = await page.getTextContent();
-            pdfText += `[Página ${i}]\n${textContent.items.map(item => item.str).join(' ')}\n\n`;
-
-            const pageDiv = document.createElement('div');
-            pageDiv.className = 'page-container';
-            pageDiv.id = `page-${i}`;
-
-            const canvas = document.createElement('canvas');
-            const viewport = page.getViewport({ scale: 1.5 });
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-
-            const textLayerDiv = document.createElement('div');
-            textLayerDiv.className = 'text-layer';
-            textLayerDiv.style.width = `${viewport.width}px`;
-            textLayerDiv.style.height = `${viewport.height}px`;
-
-            pageDiv.append(canvas, textLayerDiv);
-            pdfContent.appendChild(pageDiv);
-
-            await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-            await pdfjsLib.renderTextLayer({ textContent, container: textLayerDiv, viewport, textDivs: [] }).promise;
-        }
+  async function loadPDF(file) {
+    try {
+      addMessage('Sistema: Analizando PDF, por favor espera...', 'ai-message');
+      const arrayBuffer = await file.arrayBuffer();
+      pdfDocument = await pdfjsLib.getDocument(arrayBuffer).promise;
+      pdfText = '';
+      pdfContent.innerHTML = '';
+  
+      for (let i = 1; i <= pdfDocument.numPages; i++) {
+        const page = await pdfDocument.getPage(i);
+        const textContent = await page.getTextContent();
         
-        addMessage('PDF cargado. Ya puedes hacer preguntas sobre su contenido.', 'system');
-      } catch (error) {
-        console.error('Error al cargar el PDF:', error);
-        addMessage('Error al cargar el PDF. Intenta con otro archivo.', 'system');
+        const pageText = textContent.items.map(item => item.str).join(' ');
+        pdfText += `[Página ${i}] ${pageText}\n\n`;
+  
+        const pageDiv = document.createElement('div');
+        pageDiv.className = 'page-container';
+        pageDiv.id = `page-${i}`;
+  
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        const viewport = page.getViewport({ scale: 1.5 });
+        
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+  
+        const textLayerDiv = document.createElement('div');
+        textLayerDiv.className = 'text-layer';
+        textLayerDiv.style.width = `${viewport.width}px`;
+        textLayerDiv.style.height = `${viewport.height}px`;
+  
+        pageDiv.appendChild(canvas);
+        pageDiv.appendChild(textLayerDiv);
+        pdfContent.appendChild(pageDiv);
+  
+        await page.render({ canvasContext: context, viewport }).promise;
+        
+        pdfjsLib.renderTextLayer({
+            textContent,
+            container: textLayerDiv,
+            viewport,
+            textDivs: []
+        });
       }
-    }
-  
-    /**
-     * Función no destructiva para limpiar los resaltados de búsqueda anteriores.
-     */
-    function clearAllHighlights() {
-      const parentSpans = new Set();
-      document.querySelectorAll('mark.highlight').forEach(mark => {
-          if (mark.parentNode) parentSpans.add(mark.parentNode);
-      });
-      parentSpans.forEach(span => { span.innerHTML = span.textContent; });
-    }
-  
-    /**
-     * Busca un término en el texto del PDF y resalta las coincidencias.
-     */
-    function searchInPDF() {
-      const searchTerm = searchInput.value.trim();
-      if (!searchTerm || !pdfDocument) return;
-  
-      clearAllHighlights();
-  
-      let foundCount = 0;
-      let firstFoundPage = -1;
-  
-      document.querySelectorAll('.text-layer span').forEach((span, index) => {
-        if (span.textContent.toLowerCase().includes(searchTerm.toLowerCase())) {
-          foundCount++;
-          const pageContainer = span.closest('.page-container');
-          if (firstFoundPage === -1 && pageContainer) {
-            firstFoundPage = parseInt(pageContainer.id.split('-')[1]);
-          }
-          const regex = new RegExp(`(${escapeRegExp(searchTerm)})`, 'gi');
-          span.innerHTML = span.textContent.replace(regex, `<mark class="highlight flash">$1</mark>`);
-        }
-      });
-  
-      if (foundCount > 0) {
-        addMessage(`Término "${searchTerm}" encontrado ${foundCount} veces.`, 'system');
-        document.getElementById(`page-${firstFoundPage}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setTimeout(() => document.querySelectorAll('.highlight.flash').forEach(el => el.classList.remove('flash')), 2000);
-      } else {
-        addMessage(`Término "${searchTerm}" no encontrado.`, 'system');
-      }
-    }
-    function escapeRegExp(string) { return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-  
-    /**
-     * Llama a una API de chat (backend o servicio serverless).
-     * Nota: Esta es una función de ejemplo, necesitarás un backend para que funcione.
-     */
-    async function callGroqAPI(question, context) {
-      // ===== SIMULACIÓN DE RESPUESTA DE LA IA (MODO OFFLINE) =====
-      // Reemplaza esta simulación con tu llamada fetch a tu backend.
-      // Ejemplo: const response = await fetch('/api/chat', ...);
       
-      console.log("Contexto enviado a la IA (primeros 500 caracteres):", context.substring(0, 500));
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simula la espera de red
+      addMessage('Sistema: PDF cargado correctamente. Ya puedes hacer preguntas.', 'ai-message');
+    } catch (error) {
+      console.error('Error al cargar el PDF:', error);
+      addMessage('Sistema: Error al cargar el PDF. Por favor, intenta con otro archivo.', 'ai-message');
+    }
+  }
+  
+  function searchInPDF() {
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    if (!searchTerm || !pdfDocument) return;
 
-      if (question.toLowerCase().includes("resumen")) {
-          return "Basado en el documento, este es un resumen conciso: el texto trata sobre [tema principal], destacando [punto clave 1] y [punto clave 2].";
-      }
-      return `Lo siento, como esta es una simulación, no puedo procesar tu pregunta específica sobre "${question}". Para una respuesta real, deberás conectar esto a un backend con una API de IA.`;
+    clearAllHighlights();
+  
+    const textLayers = document.querySelectorAll('.text-layer');
+    let foundCount = 0;
+    let firstFoundPage = -1;
+
+    textLayers.forEach((layer, index) => {
+        const pageNum = index + 1;
+        const textSpans = layer.querySelectorAll('span');
+        textSpans.forEach(span => {
+            if (span.textContent.toLowerCase().includes(searchTerm)) {
+                if (firstFoundPage === -1) firstFoundPage = pageNum;
+                foundCount++;
+                const regex = new RegExp(`(${searchTerm})`, 'gi');
+                span.innerHTML = span.textContent.replace(regex, `<mark class="highlight flash">$1</mark>`);
+            }
+        });
+    });
+
+    if (foundCount > 0) {
+        addMessage(`Término "${searchTerm}" encontrado ${foundCount} veces.`, 'ai-message');
+        document.getElementById(`page-${firstFoundPage}`).scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => {
+            document.querySelectorAll('.highlight.flash').forEach(el => el.classList.remove('flash'));
+        }, 2000);
+    } else {
+        addMessage(`Término "${searchTerm}" no encontrado en el documento.`, 'ai-message');
     }
+  }
+
+  function clearAllHighlights() {
+      const marks = document.querySelectorAll('mark.highlight');
+      marks.forEach(mark => {
+          const parent = mark.parentNode;
+          parent.replaceWith(parent.textContent);
+      });
+  }
   
-    /**
-     * Procesa la pregunta del usuario.
-     * @param {string} question - La pregunta del usuario.
-     */
-    async function processQuestion(question) {
-      if (!pdfText) {
-        addMessage('Por favor, carga un PDF primero.', 'system');
-        return;
-      }
+  function addMessage(text, className, isThinking = false) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${className}`;
+    if(isThinking) {
+      messageDiv.classList.add('thinking-message');
+    }
+    messageDiv.textContent = text;
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    return messageDiv;
+  }
   
-      const thinkingMessage = addMessage('IA está pensando...', 'ai', true);
-  
+  // ===================================================================
+  // ¡AQUÍ ESTÁ EL CAMBIO!
+  // Esta función ahora llama a nuestro servidor intermediario seguro
+  // y ya no contiene ninguna clave de API.
+  // ===================================================================
+  async function callGroqAPI(question, context) {
       try {
-        const response = await callGroqAPI(question, pdfText);
-        
-        const contentDiv = thinkingMessage.querySelector('.message-content');
-        if (contentDiv) contentDiv.textContent = response;
-        thinkingMessage.classList.remove('thinking-message');
-  
+          const response = await fetch('/api/chat', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ question, context })
+          });
+
+          if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(`Error del servidor: ${errorData.error}`);
+          }
+
+          const data = await response.json();
+          return data.choices[0].message.content.trim();
+
       } catch (error) {
-        console.error('Error procesando la pregunta:', error);
-        const contentDiv = thinkingMessage.querySelector('.message-content');
-        if (contentDiv) contentDiv.textContent = `Error: ${error.message}. Revisa la consola.`;
-        thinkingMessage.classList.remove('thinking-message');
+          console.error('Error al llamar al servidor intermediario:', error);
+          throw error;
       }
+  }
+  
+  async function processQuestion(question) {
+    if (!pdfText) {
+      addMessage('Sistema: Por favor, carga un PDF primero.', 'ai-message');
+      return;
     }
   
-    // ========================
-    // Event Listeners
-    // ========================
-    document.getElementById('pdf-upload').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file?.type === 'application/pdf') loadPDF(file);
-      else if (file) addMessage('Por favor, selecciona un archivo PDF válido.', 'system');
-    });
+    if (question.trim().length < 4) {
+      addMessage('Sistema: Por favor, formula una pregunta más específica.', 'ai-message');
+      return;
+    }
+
+    const thinkingMessage = addMessage('IA está pensando...', 'ai-message', true);
   
-    sendButton.addEventListener('click', () => {
-      const question = questionInput.value.trim();
-      if (question) {
-        addMessage(question, 'user');
-        processQuestion(question);
-        questionInput.value = '';
-      }
-    });
+    try {
+      const context = pdfText;
+      const response = await callGroqAPI(question, context);
+      
+      thinkingMessage.textContent = response;
+      thinkingMessage.classList.remove('thinking-message');
+
+    } catch (error) {
+      console.error('Error al procesar la pregunta:', error);
+      thinkingMessage.textContent = `Error: ${error.message}. Revisa la consola para más detalles.`;
+      thinkingMessage.classList.remove('thinking-message');
+    }
+  }
   
-    searchButton.addEventListener('click', searchInPDF);
-    searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') searchInPDF(); });
-    questionInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendButton.click(); });
+  document.getElementById('pdf-upload').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      loadPDF(file);
+    } else {
+      addMessage('Sistema: Por favor, selecciona un archivo PDF válido.', 'ai-message');
+    }
+  });
   
-    // Mensaje de bienvenida inicial
-    addMessage('¡Bienvenido! Por favor, sube un archivo PDF para comenzar.', 'system');
+  sendButton.addEventListener('click', () => {
+    const question = questionInput.value.trim();
+    if (question) {
+      addMessage(`Tú: ${question}`, 'user-message');
+      processQuestion(question);
+      questionInput.value = '';
+    }
+  });
+  
+  searchButton.addEventListener('click', searchInPDF);
+  
+  searchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      searchInPDF();
+    }
+  });
+  
+  questionInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      sendButton.click();
+    }
+  });
+  
+  addMessage('Sistema: ¡Bienvenido! Por favor, carga un PDF para comenzar.', 'ai-message');
   </script>
 </body>
 </html>
